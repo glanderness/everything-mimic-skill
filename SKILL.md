@@ -1,16 +1,23 @@
 ---
-name: wechat-style-layout
-description: Use when extracting reusable WeChat official account article layout styles from PDF samples, turning those observations into editable style profiles, or applying a saved style profile to new Chinese articles as original WeChat-ready HTML/Markdown layouts.
+name: everything-mimic-skill
+description: Use when extracting reusable structure, style, rhythm, and platform constraints from reference content, comparing them with a new content task, and applying the resulting template. The current MVP focuses on WeChat official account article layout styles from PDF samples and WeChat-ready HTML outputs.
 ---
 
-# WeChat Style Layout
+# Everything Mimic Skill
 
 ## Overview
 
-Use this skill to build a reusable WeChat official account layout style from PDF samples, then apply that style to new articles. The goal is not pixel-perfect copying; it is to extract generalizable layout principles and generate original layouts with a similar reading rhythm.
+Use this skill to build a reusable mimic system from reference content, then apply that system to new content. The long-term goal is not limited to WeChat layout. It is to observe any high-quality sample, extract its structure, rhythm, expression logic, visual language, medium constraints, and delivery rules, then turn those observations into an editable template.
+
+The current MVP starts with WeChat official account article layout because it is a concrete, high-friction use case: it combines text formatting, visual rhythm, image placement, platform compatibility, and publishing handoff. In this first scenario, the skill extracts reusable WeChat article layout styles from PDF samples and applies them to new Chinese articles as original WeChat-ready HTML.
+
+The goal is not pixel-perfect copying. It is to extract generalizable principles and generate original work with a similar reading experience.
 
 ## Core Contract
 
+- Treat WeChat article layout as the first implementation scenario of a broader mimic framework.
+- For any future medium, separate universal mimic logic from platform-specific output rules.
+- Mimic through structure, rhythm, constraints, and reusable principles rather than direct copying.
 - Final output is body-only by default: no WeChat article title, author, account metadata, date, location, read/listen count, or native header area.
 - Preserve the source style's text formatting and reading rhythm.
 - Understand the whole article's image cadence, not only isolated images.
@@ -125,8 +132,5 @@ Prefer:
 
 ## Scripts
 
-- `scripts/inspect_pdf.py`: render PDF pages and write a rough JSON inspection report.
 - `scripts/render_preview.py`: insert body HTML into a preview shell.
-- `scripts/save_style_template.py`: save an approved run as a reusable template.
 - `scripts/extract_session_images.py`: decode built-in Codex Desktop image generation results from session JSONL into a project's `assets/` folder.
-
