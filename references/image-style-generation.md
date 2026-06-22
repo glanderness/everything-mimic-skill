@@ -2,7 +2,9 @@
 
 Use this guide when a WeChat style template includes recurring images, cover slides, diagrams, screenshots, or illustration systems.
 
-## 1. Analyze Global Image Cadence
+## Workflow
+
+### 0. Analyze Global Image Cadence
 
 Before generating individual images, inspect the whole reference article and identify its image rhythm:
 
@@ -12,24 +14,51 @@ Before generating individual images, inspect the whole reference article and ide
 - Are images explanatory slides, screenshots, diagrams, photos, or cards?
 - How many paragraphs usually sit between images?
 
+Write this as an explicit rule in `style-profile.json`, for example:
+
+```json
+{
+  "image_cadence": {
+    "major_section_rule": "Every numbered major section should include one full-width concept slide immediately after the h2 and before the explanatory prose.",
+    "caption_rule": "Every section image gets a short centered gray caption.",
+    "required": true
+  }
+}
+```
+
 Do not treat images as optional decoration when the reference uses them as the backbone of section rhythm.
 
-## 2. Extract Image Style
+### 1. Extract Image Style
 
 For each important source image type, record:
 
-- role
-- composition
-- visual language
-- palette
-- typography
-- content logic
-- reusable motifs
-- assets to avoid
+- Role: hero image, section divider, concept diagram, screenshot, quote card, closing QR card
+- Composition: banner, card grid, flow line, left-title/right-diagram, full-width screenshot
+- Visual language: paper texture, sketch, flat vector, collage, screenshot, photo
+- Palette: background, accent colors, text colors, border colors
+- Typography: headline size, title weight, caption treatment
+- Content logic: what the image explains, not just what it looks like
+- Reusable motifs: path, cards, icons, labels, frames, badges
+- Assets to avoid: logos, QR codes, account marks, branded motifs, exact illustrations
 
-## 3. Generate Adapted Original Images
+Add a compact `image_style` section to `style-profile.json`.
 
-Use image generation for bitmap assets when needed. Prompt for the target article's subject while preserving the template's general visual language.
+### 2. Generate Adapted Original Images
+
+Use the image generation tool for bitmap assets. Prompt for the target article's subject while preserving the template's general visual language.
+
+Default prompt structure:
+
+```text
+Asset type: WeChat article <hero/section/diagram> image
+Primary request: <new article subject>
+Style: <template image style>
+Composition: <layout and focal structure>
+Text: <exact text, keep minimal>
+Palette: <template palette>
+Constraints: original image; no source logos; no QR codes unless user provided; no copyrighted or recognizable source art
+Avoid: <known failure modes>
+```
 
 Keep in-image text short. Generated Chinese microcopy can drift, so prefer:
 
@@ -39,25 +68,52 @@ Keep in-image text short. Generated Chinese microcopy can drift, so prefer:
 
 For detailed explanations, put text in HTML below the image instead of inside the image.
 
-## 4. Save And Integrate
+### 3. QA Before Integration
+
+Reject and regenerate if:
+
+- The topic is wrong
+- Any required text is misspelled
+- It includes unrelated brands, companies, tickers, logos, QR codes, watermarks, or source-specific art
+- It produces dense unreadable tables
+- It conflicts with the article's claim or tone
+
+Record rejected outputs briefly in `layout-notes.md` if they reveal a prompt risk.
+
+### 4. Save And Integrate
 
 For project-bound images:
 
 1. Move or copy the final generated image into the article run folder, usually `assets/`.
-2. Use stable filenames such as `hero.png`, `section-01.png`, or `closing-qr.png`.
+2. Use a stable filename such as `hero.png`, `section-01.png`, or `closing-qr.png`.
 3. Replace placeholder blocks in `article.wechat.html` with `<img>` tags using local relative paths for preview.
-4. Keep captions in HTML unless the source style requires embedded captions.
-5. Re-render `preview.html`.
+4. Keep captions in HTML, not embedded in the image, unless the source style requires embedded captions.
+5. Re-render `preview.html` and visually check mobile fit.
 
-## 5. Codex Desktop Built-In Image Persistence
+Never leave a referenced article image only in a model-generated default cache folder.
 
-When using the built-in image generation tool inside Codex Desktop, the generated image may not appear as a normal file in a predictable `generated_images/` folder. It can still be recovered without configuring an API Key:
+### 4.1. Codex Desktop Built-In Image Persistence
+
+When using the built-in image generation tool inside Codex Desktop, the generated image may not appear as a normal file in a predictable `generated_images/` folder. In this environment, the result can still be recovered without configuring an API Key:
 
 1. Locate the active Codex session JSONL under `~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl`.
-2. Find records where `payload.type` contains `image_generation` and `payload.result` contains a base64 PNG.
+2. Find records whose payload contains an image generation result, typically:
+   - `payload.type == "image_generation_call"` or the related image generation end event.
+   - `payload.result` containing a base64-encoded PNG.
 3. Decode the base64 result into the current output project's `assets/` folder.
-4. Give each decoded image a stable semantic filename.
-5. Update `article.wechat.html`, `wechat-image-upload-map.md`, and `preview.html`.
+4. Give each decoded image a stable semantic filename, such as `hero-image2.png`, `section-01-image2.png`, or `co-create-image2.png`.
+5. Update `article.wechat.html` to reference those local files.
+6. Update `wechat-image-upload-map.md` so the user knows which local file corresponds to each image position.
+7. Re-render `preview.html` and verify the images load from the output folder.
 
-Use `scripts/extract_session_images.py` to automate this.
+Use `scripts/extract_session_images.py` to automate this when possible. Keep any HTML-rendered fallback images as backups, for example `hero-html.png`, so the project preserves both the fallback and the generated bitmap version.
 
+## Required Output Check
+
+Before final delivery, count major sections and section images:
+
+- Number of major `h2` sections
+- Number of section images after `h2`
+- Any intentionally missing image and why
+
+If the template requires one image per major section, these counts should match.

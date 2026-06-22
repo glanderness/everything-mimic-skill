@@ -35,8 +35,11 @@ The goal is not pixel-perfect copying. It is to extract generalizable principles
 Before applying this skill, load the relevant reference files instead of relying only on this summary:
 
 - Always read `references/core-principles.md` for body-only output, text formatting, image rhythm, WeChat compatibility, and self-check rules.
+- Read `references/style-extraction.md` when turning PDFs or reference samples into reusable style profiles.
+- Read `references/style-replication-policy.md` whenever the task involves imitating, mimicking, cloning, copying, or closely matching a public reference style.
 - Read `references/image-style-generation.md` whenever the source or target article involves images, diagrams, screenshots, generated illustrations, cover cards, section cards, or image captions.
 - Read `references/wechat-rendering-rules.md` before finalizing HTML intended for WeChat paste/edit workflows.
+- Read `references/wechat-image-transfer.md` when the user asks whether images can paste into WeChat, transfer with HTML, use hosted URLs, or sync through WeChat APIs.
 
 These reference files contain operational constraints. Do not treat them as optional background reading.
 
@@ -174,5 +177,7 @@ Prefer:
 
 ## Scripts
 
+- `scripts/inspect_pdf.py`: render PDF pages to PNG and write a rough JSON inspection report for style extraction.
 - `scripts/render_preview.py`: insert body HTML into a preview shell.
+- `scripts/save_style_template.py`: copy approved style files into a reusable template folder.
 - `scripts/extract_session_images.py`: decode built-in Codex Desktop image generation results from session JSONL into a project's `assets/` folder.

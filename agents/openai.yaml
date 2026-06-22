@@ -1,0 +1,8 @@
+interface:
+  display_name: "Everything Mimic Skill"
+  short_description: "拆解、对比、抽象并模仿优秀内容；MVP 从公众号图文排版切入"
+  brand_color: "#2F6F8F"
+  default_prompt: "Use $everything-mimic-skill to analyze these reference samples, save a reusable style/profile, and apply it to my new content."
+
+policy:
+  allow_implicit_invocation: true

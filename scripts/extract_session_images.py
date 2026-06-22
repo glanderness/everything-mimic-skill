@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Extract Codex Desktop built-in image generation results from a session JSONL."""
+"""Extract Codex Desktop built-in image generation results from a session JSONL.
+
+The Codex Desktop image generation tool may store generated PNGs as base64
+inside ~/.codex/sessions/.../rollout-*.jsonl instead of writing an obvious
+image file. This helper decodes the latest results into a project assets folder.
+"""
 
 from __future__ import annotations
 
@@ -16,9 +21,22 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("session_jsonl", type=Path, help="Path to rollout-*.jsonl")
     parser.add_argument("--out-dir", type=Path, required=True, help="Output assets directory")
-    parser.add_argument("--last", type=int, default=1)
-    parser.add_argument("--names", default="")
-    parser.add_argument("--lines", default="")
+    parser.add_argument(
+        "--last",
+        type=int,
+        default=1,
+        help="Number of latest generated images to extract when --lines is omitted",
+    )
+    parser.add_argument(
+        "--names",
+        default="",
+        help="Comma-separated output filenames. Count should match selected images.",
+    )
+    parser.add_argument(
+        "--lines",
+        default="",
+        help="Optional comma-separated 1-based JSONL line numbers to extract.",
+    )
     return parser.parse_args()
 
 
@@ -29,6 +47,9 @@ def image_payload(obj: dict[str, Any]) -> str | None:
     result = payload.get("result")
     if not isinstance(result, str) or not result:
         return None
+
+    # Known Codex Desktop shape: payload.type == image_generation_call.
+    # Be permissive, because some builds emit the same result with an end event.
     payload_type = payload.get("type")
     if payload_type and "image_generation" not in str(payload_type):
         return None
@@ -68,6 +89,9 @@ def main() -> int:
     else:
         selected = records[-args.last :]
 
+    if not selected:
+        raise SystemExit("No matching image generation records selected")
+
     names = [name.strip() for name in args.names.split(",") if name.strip()]
     if names and len(names) != len(selected):
         raise SystemExit("--names count must match selected image count")
@@ -79,9 +103,9 @@ def main() -> int:
         output_path = args.out_dir / name
         output_path.write_bytes(decode_png(data))
         print(f"line {line_no}: {output_path}")
+
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

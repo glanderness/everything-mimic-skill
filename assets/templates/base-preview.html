@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{TITLE}}</title>
+  <style>
+    html {
+      background: #f3f4f6;
+    }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: #222;
+    }
+    .preview-shell {
+      max-width: 430px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: #fff;
+      box-shadow: 0 0 30px rgba(15, 23, 42, 0.12);
+    }
+    .wechat-article {
+      box-sizing: border-box;
+      padding: 28px 22px 40px;
+      overflow-wrap: anywhere;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+  <main class="preview-shell">
+    <article class="wechat-article">
+{{BODY}}
+    </article>
+  </main>
+</body>
+</html>
+
