@@ -25,7 +25,7 @@
 ```text
 wechat-style-runs/
 ├── 输出/
-│   └── 2026-06-19_文章核心内容_风格名/
+│   └── 具体日期_文章核心内容_风格名/
 │       ├── article.wechat.html
 │       ├── preview.html
 │       ├── assets/
