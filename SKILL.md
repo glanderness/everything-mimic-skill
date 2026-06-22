@@ -52,7 +52,7 @@ Every extracted style must include:
 When the user provides a new article and a saved style template:
 
 1. Read the target `style-profile.json`.
-2. Create an output folder under `wechat-style-runs/输出/`, using `YYYY-MM-DD_文章核心内容_风格名/`.
+2. Create an output folder under `wechat-style-runs/输出/`, using `具体日期_文章核心内容_风格名/`.
 3. Segment the article globally: intro, sections, concepts, paragraphs, quotes, lists, image needs, captions, and closing.
 4. Treat the WeChat article title and metadata as editor/page chrome, not body content.
 5. Apply both structural rhythm and visual styling.
