@@ -1,11 +1,18 @@
-# WeChat Style Layout Skill
+# Everything Mimic Skill
 
-一个用于公众号图文排版风格提取、模板化和正文排版生成的 Codex Skill。
+一个用于拆解、对比、抽象和模仿任意优秀内容的 Codex Skill。
 
-它的目标不是机械复制某个公众号，而是从 PDF 样本中抽取可复用的图文风格原则，再将这些原则应用到新的中文文章中，生成更适合粘贴到微信公众号编辑器的 HTML。
+这个 Skill 的长期目标不是只做公众号排版，而是建立一套通用的“内容模仿系统”：面对一篇文章、一套页面、一个视频脚本、一份产品文档或任意可观察样本，先提取其结构、节奏、表达方式、视觉语言和关键约束，再沉淀成可复用模板，最后迁移到新的内容任务中。
+
+当前版本先从“公众号图文排版”这个具体场景切入。原因是公众号文章同时包含文本结构、视觉排版、图文节奏、平台兼容和发布交付等问题，非常适合作为 Everything Mimic Skill 的第一个 MVP 场景。
+
+它的目标不是机械复制某个公众号，而是从 PDF 样本中抽取可复用的风格原则，再将这些原则应用到新的中文文章中，生成更适合粘贴到微信公众号编辑器的 HTML。
 
 ## 核心能力
 
+- 对任意参考内容进行拆解：识别结构、节奏、表达、视觉、媒介和平台约束。
+- 对新内容与参考样本进行对比：找出应该保留、迁移、舍弃或改造的部分。
+- 将可复用规律模板化，形成之后可以反复调用的风格或方法档案。
 - 从公众号 PDF 样本中提取排版风格。
 - 将字体、间距、色彩、段落节奏、标题层级、组件样式保存成风格模板。
 - 分析整篇文章的图文关系，而不是只孤立模仿某一张图。
@@ -98,14 +105,15 @@ wechat-style-runs/
 将本仓库复制到 Codex Skill 目录：
 
 ```bash
+git clone https://github.com/glanderness/everything-mimic-skill.git
 mkdir -p ~/.codex/skills
-cp -R wechat-style-layout ~/.codex/skills/wechat-style-layout
+cp -R everything-mimic-skill ~/.codex/skills/everything-mimic-skill
 ```
 
 然后在 Codex 中直接描述任务，例如：
 
 ```text
-用 wechat-style-layout 帮我从这篇 PDF 提取公众号图文风格。
+用 Everything Mimic Skill 帮我从这篇 PDF 提取公众号图文风格。
 ```
 
 或：
@@ -116,5 +124,4 @@ cp -R wechat-style-layout ~/.codex/skills/wechat-style-layout
 
 ## 复刻边界
 
-本 Skill 只提取可复用的排版原则和阅读节奏，不应复制他人的 logo、二维码、固定品牌标识、专有插画或可识别的原创图形资产。发布版本应当是“风格相近但表达原创”的适配结果。
-
+本 Skill 只提取可复用的结构、节奏、方法和风格原则，不应复制他人的 logo、二维码、固定品牌标识、专有插画、独特文案或可识别的原创图形资产。发布版本应当是“方法相通、风格相近、表达原创”的适配结果。
