@@ -82,6 +82,73 @@ Requirements:
 - Images adjusted to WeChat endpoint limits. For `media/uploadimg`, keep images JPG/PNG and under 1MB unless the current official docs say otherwise.
 - Secure secret storage. Never hardcode credentials in article files.
 
+Implementation helper:
+
+- Use `scripts/wechat_uploadimg.py` to prepare and upload article images through `media/uploadimg`.
+- The script reads `WECHAT_APP_ID` and `WECHAT_APP_SECRET` from environment variables.
+- It compresses oversized local PNG/JPG files into upload-safe JPG files, uploads them, then rewrites local `img src="assets/..."` values to the WeChat-hosted URLs returned by the API.
+- Run with `--dry-run` first to verify image paths and compressed file sizes before making API calls.
+
+Example:
+
+```bash
+export WECHAT_APP_ID="..."
+export WECHAT_APP_SECRET="..."
+python3 scripts/wechat_uploadimg.py path/to/article.wechat.html \
+  --project-dir path/to/output-project \
+  --out path/to/article.wechat-uploadimg.html \
+  --map path/to/wechat-uploadimg-map.json
+```
+
+If the token request fails with an IP whitelist error, the current machine/network IP must be added to the WeChat Official Account backend developer settings before retrying.
+
+### Mode E: WeChat API Publish And Scheduling
+
+Publishing is possible through the WeChat free publish API after a draft has been created.
+
+Flow:
+
+1. Create a draft and obtain `draft_media_id`.
+2. Submit the draft with `POST /cgi-bin/freepublish/submit`.
+3. Store the returned `publish_id`.
+4. Poll `POST /cgi-bin/freepublish/get` to check publish status.
+
+Important constraints:
+
+- Do not publish by default. Publishing is an external side effect and requires explicit user approval at action time.
+- The WeChat publish API is immediate. It accepts a draft media id; it does not provide a native "publish at this future time" parameter in the normal free publish endpoint.
+- Scheduled publishing should therefore be implemented outside WeChat API by a trusted scheduler, such as launchd, cron, GitHub Actions, a server task queue, or a workflow automation service. The scheduler calls the publish script at the chosen time.
+- Always create and inspect a draft first. Do not generate content and publish in one blind step.
+- Keep publish logs: draft media id, publish id, status polling results, account, requested time, actual submit time, and operator/user confirmation.
+
+Implementation helper:
+
+- Use `scripts/wechat_publish.py` for dry-run checks, explicit publish submission, and publish-status polling.
+- The script is safe by default: it will not publish unless `--execute` is present.
+- `--draft-media-id` accepts either the raw draft media id or a local `wechat-draft-report.json` containing `draft_media_id`.
+
+Examples:
+
+```bash
+# Dry run only. Does not publish.
+python3 scripts/wechat_publish.py \
+  --draft-media-id path/to/wechat-draft-report.json
+
+# Actually submit publish request. Use only after explicit approval.
+python3 scripts/wechat_publish.py \
+  --draft-media-id path/to/wechat-draft-report.json \
+  --execute \
+  --out-report path/to/wechat-publish-report.json
+
+# Check publish status after submit.
+python3 scripts/wechat_publish.py \
+  --status \
+  --publish-id PUBLISH_ID \
+  --out-report path/to/wechat-publish-status.json
+```
+
+For timed publishing, create a scheduler job that runs the explicit publish command at the desired time. The Skill should generate the command and schedule file only after the user specifies the exact publish time and confirms the account/draft.
+
 ## Recommended Skill Behavior
 
 Default order:

@@ -1,12 +1,10 @@
 # Everything Mimic Skill
 
-> 如何实现：**参考样本 → 风格拆解 → 图文关系抽象 → 模板保存 → 新内容结构化 → 图文排版生成 → 平台兼容交付 → 自检**。
+> 主流程：**参考样本 → 风格拆解 → 图文关系抽象 → 模板保存 → 新内容结构化 → 图文排版生成 → 平台兼容交付 → 自检**。
 
-一个用于拆解、对比、抽象和模仿任意优秀内容的 Skill。
+一个用于拆解、对比、抽象和模仿任意优秀内容的 Codex Skill。
 
-这个 Skill 的长期目标不是只做公众号排版，而是建立一套通用的“内容模仿系统”：面对一篇公众号文章、一个小红书图文内容档或任意可观察样本，先提取其结构、节奏、表达方式、视觉语言和关键约束，再沉淀成可复用模板，最后复制到新的内容任务中。
-
-需要注意的是，本skill提取的是形式而非内容，不涉及内容的仿写和模仿。帮助你把已有的内容，用别人已经验证过的、更好的形式呈现出来。
+这个 Skill 的长期目标不是只做公众号排版，而是建立一套通用的“内容模仿系统”：面对一篇文章、一套页面、一个视频脚本、一份产品文档或任意可观察样本，先提取其结构、节奏、表达方式、视觉语言和关键约束，再沉淀成可复用模板，最后迁移到新的内容任务中。
 
 当前版本先从“公众号图文排版”这个具体场景切入。原因是公众号文章同时包含文本结构、视觉排版、图文节奏、平台兼容和发布交付等问题，非常适合作为 Everything Mimic Skill 的第一个 MVP 场景。
 
@@ -19,7 +17,7 @@ Everything Mimic Skill 可以理解为一个通用模仿系统。它不直接复
 当前 MVP 先服务公众号图文排版。完整流程包括：
 
 1. **输入参考样本和目标内容**  
-   参考样本可以是公众号 PDF、截图、网页、文章样本等；目标内容是用户希望重新组织、排版或表达的新文章。
+   参考样本可以是公众号 PDF、公众号链接、截图、网页、文章样本等；目标内容是用户希望重新组织、排版或表达的新文章。
 
 2. **提取风格模板**  
    从参考样本中观察标题、正文、图片、图注、引用、卡片、分隔线、字体、颜色、间距和组件规则，并保存为 `style-profile.json` 与 `style-brief.md`。
@@ -60,6 +58,12 @@ Everything Mimic Skill 可以理解为一个通用模仿系统。它不直接复
 
 ```text
 wechat-style-runs/
+├── 输入/
+│   └── 具体日期_文章核心内容/
+│       ├── source.pdf
+│       ├── source.html
+│       ├── fullpage.png
+│       └── capture-report.json
 ├── 输出/
 │   └── 具体日期_文章核心内容_风格名/
 │       ├── article.wechat.html
@@ -80,6 +84,34 @@ wechat-style-runs/
 ```
 
 ## 工作流
+
+### 0. 公众号链接直接进入风格提取
+
+如果用户只提供公众号文章链接，不需要再要求用户手动打印 PDF。默认流程是：先用脚本自动捕获公众号页面，生成 PDF/HTML/长图/诊断报告，然后直接进入风格提取。
+
+```bash
+/Users/lucas/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node \
+  scripts/wechat_url_to_pdf.mjs "https://mp.weixin.qq.com/s/..." \
+  --out-dir "wechat-style-runs/输入/2026-06-27_文章核心内容"
+```
+
+输出：
+
+- `source.pdf`：后续风格提取使用的 PDF。
+- `source.html`：渲染后的页面 HTML，便于排查。
+- `fullpage.png`：整页截图，便于视觉检查。
+- `capture-report.json`：标题、账号、发布时间、图片数量、图片加载失败数等诊断信息。
+
+脚本会使用本机 Chrome 打开真实页面，修复常见公众号懒加载图片属性，自动滚动到底部等待图片加载，再打印 PDF。
+
+如果 `capture-report.json` 中 `failedImageCount` 不为 0，应先检查截图和 HTML，不要直接把该 PDF 当作完整风格样本。
+
+链接输入的交付要求：
+
+- 读取并反馈文章标题、公众号、发布时间。
+- 反馈 PDF 页数、正文图片数、失败图片数。
+- 如果图片全部成功加载，直接基于 `source.pdf` 提取风格。
+- 最终反馈风格名称、`style_id`、核心图文风格摘要，以及输入捕获目录和风格目录。
 
 ### 1. 风格提取
 
@@ -123,6 +155,62 @@ wechat-style-runs/
 - 避免依赖 `flex`、`grid`、复杂选择器、伪元素、脚本、动画、canvas。
 - 不要把关键内容做成只在网页端渲染的复杂组件。
 - 图片不要指望随本地 HTML 自动粘贴进公众号，默认交付本地图片文件夹和上传对照表。
+
+### 图片自动进入公众号的高级路线
+
+如果普通 HTTPS 图床测试失败，可以使用微信官方 `media/uploadimg` 路线：
+
+1. 将正文里的本地图片压缩到微信接口限制以内。
+2. 使用公众号 `WECHAT_APP_ID` / `WECHAT_APP_SECRET` 获取 `access_token`。
+3. 调用微信图文正文图片上传接口，获得微信托管的图片 URL。
+4. 将 `article.wechat.html` 中的 `assets/...` 图片路径替换为微信返回的 URL。
+5. 生成 `article.wechat-uploadimg.html` 后再复制到公众号编辑器。
+
+本仓库提供脚本：
+
+```bash
+python3 scripts/wechat_uploadimg.py article.wechat.html \
+  --project-dir path/to/output-project \
+  --out article.wechat-uploadimg.html \
+  --map wechat-uploadimg-map.json
+```
+
+真实上传前先运行 `--dry-run` 检查图片路径和压缩结果。不要把 AppSecret 写入文章文件或提交到仓库，统一通过环境变量传入。
+
+### 草稿与发布自动化
+
+图片上传跑通后，可以继续用公众号 API 创建草稿箱文章，再由人工检查草稿。
+
+发布也可以自动化，但必须加安全闸门：
+
+- 默认只创建草稿，不发布。
+- 发布前必须明确确认标题、账号、草稿、发布时间。
+- 发布脚本默认 dry-run，只有带 `--execute` 才会真正调用微信发布接口。
+- 微信 `freepublish/submit` 是立即发布接口；如果需要定时发布，应由本地或服务器调度器在指定时间调用发布脚本。
+
+本仓库提供：
+
+```bash
+# 创建草稿
+python3 scripts/wechat_create_draft.py article.wechat-uploadimg.html \
+  --title "文章标题" \
+  --author "作者" \
+  --digest "摘要" \
+  --cover assets/cover.png \
+  --out-report wechat-draft-report.json
+
+# 发布 dry-run，不会发布
+python3 scripts/wechat_publish.py \
+  --draft-media-id wechat-draft-report.json
+
+# 真实发布，必须显式 --execute
+python3 scripts/wechat_publish.py \
+  --draft-media-id wechat-draft-report.json \
+  --execute \
+  --out-report wechat-publish-report.json
+```
+
+定时发布的推荐方式是：先创建草稿和发布命令，再由 `launchd`、`cron`、GitHub Actions 或服务器任务队列在指定时间执行真实发布命令。
 
 ## 图片生成策略
 

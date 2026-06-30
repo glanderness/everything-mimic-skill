@@ -1,12 +1,40 @@
 # Style Extraction Guide
 
-Use this guide when converting PDF samples into a reusable WeChat article style profile.
+Use this guide when converting PDF samples or single WeChat article links into a reusable WeChat article style profile.
 
 ## Inputs To Inspect
 
 - Rendered page screenshots from `scripts/inspect_pdf.py`
+- Captured WeChat URL outputs from `scripts/wechat_url_to_pdf.mjs`
 - Extracted text blocks and bounding boxes when available
 - User-provided context about the account, topic, or intended adaptation
+
+## WeChat URL As A First-Class Style Input
+
+When the user gives a WeChat article URL, do not ask them to manually print the article as PDF. Use the URL capture workflow first, then extract style from the generated PDF and screenshot.
+
+Required capture outputs:
+
+- `source.pdf`: primary input for PDF-style extraction.
+- `source.html`: rendered article HTML for debugging and text inspection.
+- `fullpage.png`: visual reference for checking image loading and whole-article rhythm.
+- `capture-report.json`: title, account, publish time, image counts, failures, and diagnostic metadata.
+
+Required validation before extraction:
+
+1. Read `capture-report.json`.
+2. Confirm title/account/publish time are plausible.
+3. Confirm `failedImageCount` is `0`. If it is not `0`, inspect `fullpage.png` and explain the risk before proceeding.
+4. Render or sample-check `source.pdf` to make sure the PDF is not blank, truncated, or missing important article images.
+5. Only then continue to the normal style extraction steps.
+
+Required final response after URL-based extraction:
+
+- Captured article title/account/publish time.
+- Capture quality summary: PDF page count, image count, failed image count.
+- Extracted style name and `style_id`.
+- Short style summary covering layout, typography, component grammar, image cadence, and WeChat compatibility notes.
+- Links to the input capture folder and final style folder.
 
 ## What To Extract
 
